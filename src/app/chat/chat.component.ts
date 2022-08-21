@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {AfterContentChecked, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 // Librerias para socket
 import {Client, IMessage} from "@stomp/stompjs";
 import * as SockJS from "sockjs-client";
@@ -10,14 +10,18 @@ import {Mensaje} from "./models/mensaje";
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
-export class ChatComponent implements OnInit {
+export class ChatComponent implements OnInit, AfterContentChecked {
   private client: Client;
   public conectado: boolean = false;
   public escribiendo: string = "";
   public mensajes: Mensaje[] = [];
   public mensaje: Mensaje = new Mensaje();
 
-  constructor() {
+  constructor(private ref: ChangeDetectorRef) {
+  }
+
+  ngAfterContentChecked() {
+    this.ref.detectChanges();
   }
 
   ngOnInit(): void {
