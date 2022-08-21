@@ -16,8 +16,11 @@ export class ChatComponent implements OnInit, AfterContentChecked {
   public escribiendo: string = "";
   public mensajes: Mensaje[] = [];
   public mensaje: Mensaje = new Mensaje();
+  private clienteId: string;
 
   constructor(private ref: ChangeDetectorRef) {
+    // Asignandole a cada instancia de cliente el id
+    this.clienteId = 'id-' + new Date().getUTCMilliseconds() + '-' + Math.random().toString(36).substr(2);
   }
 
   ngAfterContentChecked() {
@@ -62,8 +65,25 @@ export class ChatComponent implements OnInit, AfterContentChecked {
         this.escribiendo = message.body;
         setTimeout(() => {
           this.escribiendo = '';
-        } , 500);
+        }, 500);
       });
+
+
+      // /chat/historial // Escuchando el evento
+      this.client.subscribe('/chat/historial/' + this.clienteId, (message: IMessage) => {
+        console.log("historial=\t" + message.body);
+
+        const historial: Mensaje[] = (JSON.parse(message.body)) as Mensaje[];
+        this.mensajes = historial.map((mensaje: Mensaje) => {
+          mensaje.fecha = new Date(mensaje.fecha).toString();
+          return mensaje;
+        }).reverse();
+
+
+      });
+
+      // Publicando que se debe recibir los mensajes del historial, por el cliente id
+      this.client.publish({destination: '/app/historial', body: this.clienteId});
 
     };
 
@@ -72,6 +92,8 @@ export class ChatComponent implements OnInit, AfterContentChecked {
       console.log("Esta desconectado del servidor =\t" + this.client.connected);
       console.log("frame =\t" + frame);
       this.conectado = false;
+      this.mensaje = new Mensaje();
+      this.mensajes = [];
     }
 
   }
