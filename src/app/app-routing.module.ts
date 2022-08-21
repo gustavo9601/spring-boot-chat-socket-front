@@ -6,6 +6,7 @@ const routes: Routes = [
   {
     path: '',
     redirectTo: '/chat',
+    pathMatch: 'full'
   },
   {
     path: 'chat',
